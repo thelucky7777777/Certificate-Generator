@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>實體燙金外框感謝狀生成與下載器</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Japanese & Chinese Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@500;700;900&family=Shippori+Mincho:wght@500;700;800&family=Zen+Antique&display=swap" rel="stylesheet">
+    <!-- html2canvas for raster image export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        /* Gold Foil CSS Shimmer & High Contrast Effects */
+        .gold-foil-text {
+            color: #b8860b;
+            font-weight: 700;
+        }
+
+        /* Ultra Crisp Title Styling - Clear, high contrast without blurry effects */
+        .title-ultra-crisp {
+            letter-spacing: 0.18em;
+            text-rendering: optimizeLegibility;
+            font-weight: 900 !important;
+        }
+
+        .title-gold-crisp {
+            color: #78350f; /* Deep crisp bronze gold for maximum legibility */
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            -webkit-text-fill-color: #78350f !important;
+            filter: none !important;
+        }
+
+        /* Fallback color for html2canvas export stability */
+        .html2canvas-active .gold-foil-text,
+        .html2canvas-active .title-gold-crisp {
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            -webkit-text-fill-color: #78350f !important;
+            color: #78350f !important;
+            filter: none !important;
+        }
+
+        /* Paper / Material Texture simulations */
+        .texture-paper {
+            background-color: #fdfbf7;
+            background-image: radial-gradient(#e2ddd0 0.8px, transparent 0.8px);
+            background-size: 10px 10px;
+            color: #1a1a1a;
+        }
+
+        .texture-wood {
+            background: radial-gradient(circle at center, #3a2012 0%, #1a0a03 100%);
+            color: #fbe3b5;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.85);
+        }
+
+        .texture-acrylic {
+            background: linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(235,242,250,0.88) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.7);
+            color: #0f172a;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.9);
+        }
+
+        .font-mincho {
+            font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
+        }
+        .font-gothic {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .font-klee {
+            font-family: 'Klee One', 'Shippori Mincho', serif;
+        }
+
+        /* Hanko Stamp Style */
+        .hanko-seal {
+            border: 2px solid #dc2626;
+            color: #dc2626;
+            border-radius: 4px;
+            font-family: 'Shippori Mincho', serif;
+            font-weight: 700;
+            line-height: 1;
+            padding: 3px;
+            text-align: center;
+            opacity: 0.88;
+            transform: rotate(-3deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 1px rgba(220,38,38,0.5);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+                color: black;
+            }
+            .certificate-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="no-print bg-slate-900 border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-bold text-lg shadow-lg">
+                感謝
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    日式正統燙金感謝狀生成器
+                    <span class="text-xs font-normal px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">嚴格排版校正版</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- Download & Quick Actions -->
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <button onclick="exportSVG()" class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-slate-950 font-semibold rounded-lg text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-file-code"></i> 下載 SVG 燙金向量外框
+            </button>
+            <button onclick="exportPNG()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-medium transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-image"></i> 下載高清 PNG
+            </button>
+            <button onclick="window.print()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-print"></i> 列印 / PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+
+        <!-- Left Control Sidebar -->
+        <aside class="no-print w-full lg:w-[410px] bg-slate-900 border-r border-slate-800 p-5 overflow-y-auto max-h-screen lg:max-h-[calc(100vh-61px)] space-y-5">
+
+            <!-- Presets Switcher -->
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-amber-400 uppercase tracking-wider block">版型樣式與排列方向</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-vertical" onclick="setLayout('vertical')" class="p-3 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-300 text-xs font-medium flex flex-col items-center gap-1.5 hover:bg-amber-500/20 transition">
+                        <i class="fa-solid fa-arrows-up-down text-base"></i>
+                        日式傳統直書 (縱書き)
+                    </button>
+                    <button id="btn-horizontal" onclick="setLayout('horizontal')" class="p-3 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 text-xs font-medium flex flex-col items-center gap-1.5 hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-arrows-left-right text-base"></i>
+                        現代標準橫書 (横書き)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Frame Border Selector -->
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-amber-400 uppercase tracking-wider block">燙金外框風格</label>
+                <select id="frameStyleSelect" onchange="updateDesign()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                    <option value="royal">鳳凰雲紋日式正統金框 (Royal Phoenix Frame)</option>
+                    <option value="classic">歐式經典雙線角花金框 (Classic Certificate Border)</option>
+                    <option value="oriental">唐草祥雲典雅金框 (Oriental Arabesque Frame)</option>
+                    <option value="baroque">巴洛克宮廷圖騰金框 (Baroque Royal Frame)</option>
+                    <option value="lattice">日式龜甲吉祥金框 (Kikkou Lattice Frame)</option>
+                    <option value="modern">極簡雙軌流線現代框 (Modern Minimalist Frame)</option>
+                    <option value="none">無邊框 (純內文模式)</option>
+                </select>
+            </div>
+
+            <!-- Material Theme Selector -->
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-amber-400 uppercase tracking-wider block">材質背景風格</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setMaterial('paper')" class="py-2 px-2.5 rounded-lg border border-slate-700 bg-amber-50 text-slate-900 text-xs font-medium text-center hover:opacity-90">和紙質典藏</button>
+                    <button onclick="setMaterial('wood')" class="py-2 px-2.5 rounded-lg border border-slate-700 bg-amber-950 text-amber-200 text-xs font-medium text-center hover:opacity-90">胡桃木銘牌</button>
+                    <button onclick="setMaterial('acrylic')" class="py-2 px-2.5 rounded-lg border border-slate-700 bg-slate-200 text-slate-900 text-xs font-medium text-center hover:opacity-90">水晶壓克力</button>
+                </div>
+            </div>
+
+            <!-- Typography & Color Settings -->
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-amber-400 uppercase tracking-wider block">字型與雕刻色彩</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="fontSelect" onchange="updateDesign()" class="bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-slate-200">
+                        <option value="font-mincho">Shippori 明朝體 (正統)</option>
+                        <option value="font-klee">Klee One 手寫硬筆體</option>
+                        <option value="font-gothic">Noto Sans 黑體 (現代)</option>
+                    </select>
+                    <select id="colorModeSelect" onchange="updateDesign()" class="bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-slate-200">
+                        <option value="gold-foil">亮燙金 (Gold Foil)</option>
+                        <option value="black-ink">傳統墨黑 (Ink Black)</option>
+                        <option value="engraved-gold">深雕金漆 (Deep Gold)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Additional Elements Toggle (Hanko Seal) -->
+            <div class="space-y-2 pt-1">
+                <div class="flex items-center justify-between bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
+                    <span class="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-stamp text-red-400"></i> 顯示日式代表印章 (朱印/角印)
+                    </span>
+                    <input type="checkbox" id="toggleHanko" onchange="updateContent()" checked class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Font Size & Spacing Controls -->
+            <div class="space-y-2.5 p-3 bg-slate-800/60 rounded-xl border border-slate-700/80">
+                <div class="text-xs font-semibold text-amber-300 flex items-center justify-between">
+                    <span><i class="fa-solid fa-sliders mr-1"></i> 字級與間距微調</span>
+                    <button onclick="resetFontSizes()" class="text-[11px] text-slate-400 hover:text-amber-300 underline">重置尺寸</button>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] text-slate-300 mb-1">
+                        <span>內文字級 (Body)</span>
+                        <span id="valBodySize" class="text-amber-400 font-mono">13px</span>
+                    </div>
+                    <input type="range" id="sliderBodySize" min="10" max="20" step="1" value="13" oninput="updateFontSizes()" class="w-full accent-amber-500 bg-slate-700 rounded h-1.5 cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] text-slate-300 mb-1">
+                        <span>標題字級 (Title)</span>
+                        <span id="valTitleSize" class="text-amber-400 font-mono">38px</span>
+                    </div>
+                    <input type="range" id="sliderTitleSize" min="26" max="50" step="1" value="38" oninput="updateFontSizes()" class="w-full accent-amber-500 bg-slate-700 rounded h-1.5 cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] text-slate-300 mb-1">
+                        <span>列/行間距 (Gap Spacing)</span>
+                        <span id="valLineHeight" class="text-amber-400 font-mono">22px</span>
+                    </div>
+                    <input type="range" id="sliderLineHeight" min="12" max="36" step="1" value="22" oninput="updateFontSizes()" class="w-full accent-amber-500 bg-slate-700 rounded h-1.5 cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Form Content Editing with STRICT Length Limits -->
+            <div class="space-y-3.5 pt-2 border-t border-slate-800">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-semibold text-amber-400 uppercase tracking-wider">欄位資料與字數上限控制</label>
+                    <button onclick="resetDefaultText()" class="text-[11px] text-slate-400 hover:text-amber-300 underline">預設內文</button>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                        <span>感謝狀標題 (Title)</span>
+                        <span id="cntTitle" class="text-slate-500 font-mono">3/10</span>
+                    </div>
+                    <input type="text" id="inputTitle" value="感謝状" maxlength="10" oninput="updateContent()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100 font-bold focus:border-amber-500 outline-none">
+                </div>
+
+                <!-- Recipient Info -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                            <span>日方公司名稱</span>
+                            <span id="cntTargetCompany" class="text-slate-500 font-mono">0/30</span>
+                        </div>
+                        <input type="text" id="inputTargetCompany" value="ABCテクノロジー 株式会社" maxlength="30" oninput="updateContent()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100 focus:border-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                            <span>日方代表職銜姓名</span>
+                            <span id="cntTargetPerson" class="text-slate-500 font-mono">0/30</span>
+                        </div>
+                        <input type="text" id="inputTargetPerson" value="代表取締役社長 山田 太郎 様" maxlength="30" oninput="updateContent()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100 focus:border-amber-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div>
+                    <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                        <span>主文 (本文)</span>
+                        <span id="cntBody" class="text-slate-500 font-mono">0/320</span>
+                    </div>
+                    <textarea id="inputBody" rows="6" maxlength="320" oninput="updateContent()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100 leading-relaxed focus:border-amber-500 outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Date & Sender Company -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                            <span>日本年號日期</span>
+                            <span id="cntDate" class="text-slate-500 font-mono">0/20</span>
+                        </div>
+                        <input type="text" id="inputDate" value="令和七年五月吉日" maxlength="20" oninput="updateContent()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100 focus:border-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                            <span>我方公司名稱</span>
+                            <span id="cntSenderCompany" class="text-slate-500 font-mono">0/30</span>
+                        </div>
+                        <input type="text" id="inputSenderCompany" value="台灣○○股份有限公司" maxlength="30" oninput="updateContent()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100 focus:border-amber-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Sender Person & Group -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                            <span>我方代表職銜姓名</span>
+                            <span id="cntSenderPerson" class="text-slate-500 font-mono">0/30</span>
+                        </div>
+                        <input type="text" id="inputSenderPerson" value="董事長 陳大明" maxlength="30" oninput="updateContent()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100 focus:border-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                            <span>參訪團落款</span>
+                            <span id="cntSenderGroup" class="text-slate-500 font-mono">0/30</span>
+                        </div>
+                        <input type="text" id="inputSenderGroup" value="暨 台灣合作夥伴參訪團 一同" maxlength="30" oninput="updateContent()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-slate-100 focus:border-amber-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Right Live Preview Canvas Area -->
+        <main class="flex-1 bg-slate-950 p-4 lg:p-8 flex items-center justify-center overflow-auto min-h-[620px]">
+
+            <!-- Certificate Canvas Container (Fixed A4 Landscape/Portrait bounds) -->
+            <div id="certificateCard" class="certificate-container relative texture-paper transition-all duration-300 shadow-2xl rounded-sm p-0 select-none overflow-hidden" style="width: 840px; height: 594px;">
+
+                <!-- Dynamic Gold Foil Frame Overlay (SVG Border Layer) -->
+                <div id="svgFrameContainer" class="absolute inset-0 pointer-events-none z-0">
+                    <!-- Dynamic SVG frame inserted by JS -->
+                </div>
+
+                <!-- Certificate Main Content Layer (Strict positioning according to Japanese traditional rules) -->
+                <div id="certificateContent" class="relative z-10 w-full h-full box-border">
+                    <!-- Populated dynamically via JavaScript -->
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Notification Toast Element -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-amber-500 text-slate-950 px-4 py-2.5 rounded-lg shadow-xl font-semibold text-xs transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check"></i> <span id="toastMsg">操作成功</span>
+    </div>
+
+    <script>
+        // State management
+        let currentLayout = 'vertical'; // 'vertical' or 'horizontal'
+        let currentMaterial = 'paper';  // 'paper', 'wood', 'acrylic'
+
+        // Typography settings
+        let bodyFontSize = 13;
+        let titleFontSize = 38;
+        let lineSpacing = 22; // Column gap / line spacing in px
+
+        // Default Content Strings tailored for standard Japanese certificate structure
+        const defaultTexts = {
+            vertical: {
+                title: '感謝状',
+                targetCompany: 'ABCテクノロジー 株式会社',
+                targetPerson: '代表取締役社長 山田 太郎 様',
+                body: `貴社におかれましては  ますますご清栄のこととお慶び申し上げます\n\nこのたびは  弊社ならびに台灣パートナー企業による貴社へのご訪問をご快諾いただき  また多大なるご厚情をもって温かくお迎えいただきましたこと  心より感謝申し上げます\n\n貴社の先進的な製造現場や高度な技術  現場の企業精神に直接触れることができ  參加者一同  深き感銘と貴重な学びを得ることができました  ご多忙の折にもかかわらず  丁寧にご案内いただきました貴社皆様の溫かいお心遣いに  厚く御礼申し上げます\n\n本訪問を通じ  貴社との信頼と絆が一層強固なものとなりました  今後とも末永くパートナーシップを深め  共に更なる發展を目指してまいりたく存じます\n\n貴社の益々のご繁栄と  社員の皆様のご健勝を心よりお祈り申し上げます`,
+                date: '令和七年五月吉日',
+                senderCompany: '台灣○○股份有限公司',
+                senderPerson: '董事長 陳大明',
+                senderGroup: '暨 台灣合作夥伴參訪團 一同'
+            },
+            horizontal: {
+                title: '感 謝 狀',
+                targetCompany: 'ABCテクノロジー 株式会社',
+                targetPerson: '代表取締役社長 山田 太郎 様',
+                body: `貴社におかれましては、ますますご清栄のこととお慶び申し上げます。\n\nこの度は、弊社ならびに弊社の台灣パートナー企業による貴社工場および本社へのご訪問をご快諾いただき、また多大なるご厚情をもって溫かくお迎えいただきましたこと、心より感謝申し上げます。\n\n貴社の先進的な製造現場や高度な技術、そして素晴らしい企業精神に直接觸れることができ、參加者一同、大変深い感銘と貴重な学びを得ることができました。ご多忙の折にもかかわらず、丁寧にご案内・ご説明くださいました貴社皆様の溫かいお心遣いに、深謝申し上げます。\n\n本訪問を通じ、貴社への信頼と絆が一層強固なものとなりました。今後とも末永くパートナーシップを深め、共に更なる發展を目指してまいりたく存じます。\n\n貴社の益々のご繁栄と、社員の皆様のご健勝を心よりお祈り申し上げます。`,
+                date: '令和7年5月15日',
+                senderCompany: '台灣○○股份有限公司',
+                senderPerson: '董事長 陳大明',
+                senderGroup: '暨 台灣合作夥伴參訪團 敬上'
+            }
+        };
+
+        // Initialize App on load
+        window.onload = function() {
+            resetDefaultText();
+            updateDesign();
+        };
+
+        function resetDefaultText() {
+            const data = defaultTexts[currentLayout];
+            document.getElementById('inputTitle').value = data.title;
+            document.getElementById('inputTargetCompany').value = data.targetCompany;
+            document.getElementById('inputTargetPerson').value = data.targetPerson;
+            document.getElementById('inputBody').value = data.body;
+            document.getElementById('inputDate').value = data.date;
+            document.getElementById('inputSenderCompany').value = data.senderCompany;
+            document.getElementById('inputSenderPerson').value = data.senderPerson;
+            document.getElementById('inputSenderGroup').value = data.senderGroup;
+            updateContent();
+        }
+
+        function resetFontSizes() {
+            bodyFontSize = 13;
+            titleFontSize = currentLayout === 'vertical' ? 38 : 34;
+            lineSpacing = currentLayout === 'vertical' ? 22 : 18;
+
+            document.getElementById('sliderBodySize').value = bodyFontSize;
+            document.getElementById('sliderTitleSize').value = titleFontSize;
+            document.getElementById('sliderLineHeight').value = lineSpacing;
+
+            document.getElementById('valBodySize').innerText = bodyFontSize + 'px';
+            document.getElementById('valTitleSize').innerText = titleFontSize + 'px';
+            document.getElementById('valLineHeight').innerText = lineSpacing + 'px';
+
+            updateContent();
+        }
+
+        function updateFontSizes() {
+            bodyFontSize = parseFloat(document.getElementById('sliderBodySize').value);
+            titleFontSize = parseFloat(document.getElementById('sliderTitleSize').value);
+            lineSpacing = parseFloat(document.getElementById('sliderLineHeight').value);
+
+            document.getElementById('valBodySize').innerText = bodyFontSize + 'px';
+            document.getElementById('valTitleSize').innerText = titleFontSize + 'px';
+            document.getElementById('valLineHeight').innerText = lineSpacing + 'px';
+
+            updateContent();
+        }
+
+        function setLayout(layout) {
+            currentLayout = layout;
+            const btnVert = document.getElementById('btn-vertical');
+            const btnHoriz = document.getElementById('btn-horizontal');
+
+            if (layout === 'vertical') {
+                btnVert.className = 'p-3 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-300 text-xs font-medium flex flex-col items-center gap-1.5 hover:bg-amber-500/20 transition';
+                btnHoriz.className = 'p-3 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 text-xs font-medium flex flex-col items-center gap-1.5 hover:bg-slate-700 transition';
+                titleFontSize = 38;
+                lineSpacing = 22;
+            } else {
+                btnHoriz.className = 'p-3 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-300 text-xs font-medium flex flex-col items-center gap-1.5 hover:bg-amber-500/20 transition';
+                btnVert.className = 'p-3 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 text-xs font-medium flex flex-col items-center gap-1.5 hover:bg-slate-700 transition';
+                titleFontSize = 34;
+                lineSpacing = 18;
+            }
+
+            document.getElementById('sliderTitleSize').value = titleFontSize;
+            document.getElementById('sliderLineHeight').value = lineSpacing;
+            document.getElementById('valTitleSize').innerText = titleFontSize + 'px';
+            document.getElementById('valLineHeight').innerText = lineSpacing + 'px';
+
+            resetDefaultText();
+            updateDesign();
+        }
+
+        function setMaterial(material) {
+            currentMaterial = material;
+            const card = document.getElementById('certificateCard');
+            card.className = card.className.replace(/texture-\w+/g, '');
+
+            if (material === 'paper') {
+                card.classList.add('texture-paper');
+            } else if (material === 'wood') {
+                card.classList.add('texture-wood');
+            } else if (material === 'acrylic') {
+                card.classList.add('texture-acrylic');
+            }
+            updateDesign();
+        }
+
+        function generateSVGFrame(style, w = 840, h = 594) {
+            const goldGradDef = `
+                <defs>
+                    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#bf953f" />
+                        <stop offset="25%" stop-color="#fcf6ba" />
+                        <stop offset="50%" stop-color="#b38728" />
+                        <stop offset="75%" stop-color="#fbf5b7" />
+                        <stop offset="100%" stop-color="#aa771c" />
+                    </linearGradient>
+                </defs>
+            `;
+
+            if (style === 'none') return '';
+
+            const rw = w - 48;
+            const rh = h - 48;
+
+            if (style === 'royal') {
+                return `
+                <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    ${goldGradDef}
+                    <rect x="24" y="24" width="${rw}" height="${rh}" fill="none" stroke="url(#goldGradient)" stroke-width="3.5" rx="2"/>
+                    <rect x="32" y="32" width="${w - 64}" height="${h - 64}" fill="none" stroke="url(#goldGradient)" stroke-width="1.2" rx="1"/>
+                    
+                    <g fill="url(#goldGradient)">
+                        <path d="M 32,32 L 110,32 C 90,50 70,50 50,70 C 50,90 32,110 32,110 Z" opacity="0.85"/>
+                        <circle cx="58" cy="58" r="5"/>
+
+                        <path d="M ${w-32},32 L ${w-110},32 C ${w-90},50 ${w-70},50 ${w-50},70 C ${w-50},90 ${w-32},110 ${w-32},110 Z" opacity="0.85"/>
+                        <circle cx="${w-58}" cy="58" r="5"/>
+
+                        <path d="M 32,${h-32} L 110,${h-32} C 90,${h-50} 70,${h-50} 50,${h-70} C 50,${h-90} 32,${h-110} 32,${h-110} Z" opacity="0.85"/>
+                        <circle cx="58" cy="${h-58}" r="5"/>
+
+                        <path d="M ${w-32},${h-32} L ${w-110},${h-32} C ${w-90},${h-50} ${w-70},${h-50} ${w-50},${h-70} C ${w-50},${h-90} ${w-32},${h-110} ${w-32},${h-110} Z" opacity="0.85"/>
+                        <circle cx="${w-58}" cy="${h-58}" r="5"/>
+                    </g>
+
+                    <g fill="url(#goldGradient)" stroke="url(#goldGradient)">
+                        <circle cx="${Math.round(w/2)}" cy="32" r="10" fill="none" stroke-width="2"/>
+                        <circle cx="${Math.round(w/2)}" cy="32" r="5"/>
+                    </g>
+                </svg>`;
+            } else if (style === 'classic') {
+                return `
+                <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    ${goldGradDef}
+                    <rect x="25" y="25" width="${w-50}" height="${h-50}" fill="none" stroke="url(#goldGradient)" stroke-width="3"/>
+                    <rect x="33" y="33" width="${w-66}" height="${h-66}" fill="none" stroke="url(#goldGradient)" stroke-width="1" stroke-dasharray="6,3"/>
+                    <g fill="none" stroke="url(#goldGradient)" stroke-width="2">
+                        <path d="M 25,75 C 50,75 75,50 75,25" />
+                        <path d="M ${w-25},75 C ${w-50},75 ${w-75},50 ${w-75},25" />
+                        <path d="M 25,${h-75} C 50,${h-75} 75,${h-50} 75,${h-25}" />
+                        <path d="M ${w-25},${h-75} C ${w-50},${h-75} ${w-75},${h-50} ${w-75},${h-25}" />
+                    </g>
+                </svg>`;
+            } else if (style === 'oriental') {
+                return `
+                <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    ${goldGradDef}
+                    <rect x="22" y="22" width="${w-44}" height="${h-44}" fill="none" stroke="url(#goldGradient)" stroke-width="3.5"/>
+                    <rect x="30" y="30" width="${w-60}" height="${h-60}" fill="none" stroke="url(#goldGradient)" stroke-width="1"/>
+                </svg>`;
+            } else if (style === 'baroque') {
+                return `
+                <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    ${goldGradDef}
+                    <rect x="18" y="18" width="${w-36}" height="${h-36}" fill="none" stroke="url(#goldGradient)" stroke-width="2"/>
+                    <rect x="24" y="24" width="${w-48}" height="${h-48}" fill="none" stroke="url(#goldGradient)" stroke-width="3"/>
+                    <rect x="32" y="32" width="${w-64}" height="${h-64}" fill="none" stroke="url(#goldGradient)" stroke-width="1.2"/>
+                </svg>`;
+            } else if (style === 'lattice') {
+                return `
+                <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    ${goldGradDef}
+                    <rect x="22" y="22" width="${w-44}" height="${h-44}" fill="none" stroke="url(#goldGradient)" stroke-width="4"/>
+                    <rect x="30" y="30" width="${w-60}" height="${h-60}" fill="none" stroke="url(#goldGradient)" stroke-width="1.5"/>
+                </svg>`;
+            } else if (style === 'modern') {
+                return `
+                <svg width="100%" height="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    ${goldGradDef}
+                    <rect x="20" y="20" width="${w-40}" height="${h-40}" fill="none" stroke="url(#goldGradient)" stroke-width="2"/>
+                    <rect x="28" y="28" width="${w-56}" height="${h-56}" fill="none" stroke="url(#goldGradient)" stroke-width="4"/>
+                </svg>`;
+            }
+            return '';
+        }
+
+        function renderVerticalText(text, fontSize, isTitle = false) {
+            if (!text) return '';
+            const chars = Array.from(text);
+            return chars.map(ch => {
+                if (ch === ' ' || ch === '　') {
+                    return `<span style="display:inline-block; height:${fontSize * 0.7}px; width:${fontSize}px;"></span>`;
+                }
+                if (['ー', '―', '-', '–', '—'].includes(ch)) {
+                    return `<span style="display:inline-block; transform:rotate(90deg); width:${fontSize}px; text-align:center;">ー</span>`;
+                }
+                if (['（', '(', '〔', '【'].includes(ch)) {
+                    return `<span style="display:inline-block; transform:rotate(90deg); width:${fontSize}px; text-align:center;">（</span>`;
+                }
+                if (['）', ')', '〕', '】'].includes(ch)) {
+                    return `<span style="display:inline-block; transform:rotate(90deg); width:${fontSize}px; text-align:center;">）</span>`;
+                }
+                if (isTitle) {
+                    // Ultra-crisp title rendering with high-contrast gradient
+                    return `<span class="gold-target-title title-ultra-crisp title-gold-crisp" style="font-size: ${fontSize}px; line-height: 1.15; display: inline-block; width:${fontSize}px; text-align:center; font-weight: 900;">${ch}</span>`;
+                }
+                return `<span style="display:inline-block; width:${fontSize}px; text-align:center; line-height:1.2;">${ch}</span>`;
+            }).join('');
+        }
+
+        function updateCounters() {
+            const inputs = [
+                { id: 'inputTitle', cnt: 'cntTitle', max: 10 },
+                { id: 'inputTargetCompany', cnt: 'cntTargetCompany', max: 30 },
+                { id: 'inputTargetPerson', cnt: 'cntTargetPerson', max: 30 },
+                { id: 'inputBody', cnt: 'cntBody', max: 320 },
+                { id: 'inputDate', cnt: 'cntDate', max: 20 },
+                { id: 'inputSenderCompany', cnt: 'cntSenderCompany', max: 30 },
+                { id: 'inputSenderPerson', cnt: 'cntSenderPerson', max: 30 },
+                { id: 'inputSenderGroup', cnt: 'cntSenderGroup', max: 30 }
+            ];
+
+            inputs.forEach(item => {
+                const el = document.getElementById(item.id);
+                const cnt = document.getElementById(item.cnt);
+                if (el && cnt) {
+                    const len = el.value.length;
+                    cnt.innerText = `${len}/${item.max}`;
+                    if (len >= item.max) {
+                        cnt.classList.remove('text-slate-500');
+                        cnt.classList.add('text-amber-400', 'font-bold');
+                    } else {
+                        cnt.classList.remove('text-amber-400', 'font-bold');
+                        cnt.classList.add('text-slate-500');
+                    }
+                }
+            });
+        }
+
+        function updateContent() {
+            updateCounters();
+
+            const title = document.getElementById('inputTitle').value || '感謝状';
+            const targetCompany = document.getElementById('inputTargetCompany').value;
+            const targetPerson = document.getElementById('inputTargetPerson').value;
+            const body = document.getElementById('inputBody').value;
+            const date = document.getElementById('inputDate').value;
+            const senderCompany = document.getElementById('inputSenderCompany').value;
+            const senderPerson = document.getElementById('inputSenderPerson').value;
+            const senderGroup = document.getElementById('inputSenderGroup').value;
+            const showHanko = document.getElementById('toggleHanko').checked;
+
+            const container = document.getElementById('certificateContent');
+
+            if (currentLayout === 'vertical') {
+                // Landscape Paper (840x594) - Traditional Japanese Vertical Flow (Right to Left)
+                // Optimal characters per column for standard certificate height
+                const maxCharsPerCol = 21;
+
+                const bodyParagraphs = body.split('\n').filter(p => p.trim() !== '');
+                let columnCount = 0;
+                let bodyColumnsHTML = '';
+
+                bodyParagraphs.forEach(para => {
+                    const chars = Array.from(para);
+                    for (let i = 0; i < chars.length; i += maxCharsPerCol) {
+                        const chunk = chars.slice(i, i + maxCharsPerCol).join('');
+                        columnCount++;
+                        bodyColumnsHTML += `
+                            <div class="flex flex-col items-center justify-start" style="font-size: ${bodyFontSize}px; color: inherit;">
+                                ${renderVerticalText(chunk, bodyFontSize)}
+                            </div>
+                        `;
+                    }
+                });
+
+                // Calculate total available center width (840 - padding 96 - right 140 - left 130 = 474px)
+                const availableCenterWidth = 474;
+                let effectiveGap = lineSpacing;
+                if (columnCount > 1) {
+                    const requiredWidth = columnCount * bodyFontSize + (columnCount - 1) * lineSpacing;
+                    if (requiredWidth > availableCenterWidth) {
+                        effectiveGap = Math.max(8, Math.floor((availableCenterWidth - (columnCount * bodyFontSize)) / (columnCount - 1)));
+                    }
+                }
+
+                const hankoHTML = showHanko ? `
+                    <div class="hanko-seal" style="width: 36px; height: 38px; font-size: 11px; margin-right: 2px; margin-bottom: 6px;">
+                        <span>印鑑</span>
+                    </div>
+                ` : '';
+
+                // Protected layout structure: Right block (140px) and Left block (130px) with shrink-0
+                container.className = "relative z-10 w-full h-full font-mincho box-border flex flex-row-reverse justify-between items-center";
+                container.style.padding = "44px 48px";
+
+                container.innerHTML = `
+                    <!-- Right Block: Title & Recipient (Width: 140px, shrink-0) -->
+                    <div class="flex flex-row-reverse items-start h-full shrink-0" style="width: 140px;">
+                        <!-- 1. Title Column (Far Right - 50px) -->
+                        <div class="flex flex-col items-center justify-center h-full" style="width: 50px;">
+                            ${renderVerticalText(title, titleFontSize, true)}
+                        </div>
+
+                        <!-- 2. Recipient Section (Next to Title - 90px) -->
+                        <div class="flex flex-row-reverse items-start justify-start gap-2 h-full pt-8 font-bold" style="width: 90px;">
+                            <div class="flex flex-col items-center" style="font-size: ${Math.round(bodyFontSize * 1.15)}px;">
+                                ${renderVerticalText(targetCompany, Math.round(bodyFontSize * 1.15))}
+                            </div>
+                            <div class="flex flex-col items-center" style="font-size: ${Math.round(bodyFontSize * 1.25)}px;">
+                                ${renderVerticalText(targetPerson, Math.round(bodyFontSize * 1.25))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Main Appreciation Body Columns (Strictly Bounded in Center) -->
+                    <div class="flex flex-row-reverse items-start justify-center h-full flex-1 min-w-0 pt-10 px-2 overflow-hidden" style="gap: ${effectiveGap}px;">
+                        ${bodyColumnsHTML}
+                    </div>
+
+                    <!-- 4. Left Block: Date & Sender (Width: 130px, shrink-0 - Protected Position) -->
+                    <div class="flex flex-col justify-between items-start h-full pt-8 pb-2 shrink-0" style="width: 130px;">
+                        <!-- Date at Top Left -->
+                        <div class="flex flex-col items-center font-semibold text-amber-950" style="font-size: ${bodyFontSize}px;">
+                            ${renderVerticalText(date, bodyFontSize)}
+                        </div>
+
+                        <!-- Sender Info at Bottom Left -->
+                        <div class="flex flex-row-reverse items-end justify-start gap-1.5 font-bold w-full relative">
+                            <div class="flex flex-col items-center" style="font-size: ${bodyFontSize}px;">
+                                ${renderVerticalText(senderCompany, bodyFontSize)}
+                            </div>
+                            <div class="flex flex-col items-center" style="font-size: ${Math.round(bodyFontSize * 1.1)}px;">
+                                ${renderVerticalText(senderPerson, Math.round(bodyFontSize * 1.1))}
+                            </div>
+                            <div class="flex flex-col items-center opacity-90 font-normal" style="font-size: ${Math.round(bodyFontSize * 0.85)}px;">
+                                ${renderVerticalText(senderGroup, Math.round(bodyFontSize * 0.85))}
+                            </div>
+                            ${hankoHTML}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Portrait Paper (594x840) - Standard Horizontal Text Flow
+                container.className = "relative z-10 w-full h-full font-mincho box-border flex flex-col justify-between";
+                container.style.padding = "55px 50px";
+                
+                const bodyParagraphs = body.split('\n').filter(p => p.trim() !== '');
+                const formattedBody = bodyParagraphs.map(p => 
+                    `<p style="margin-bottom: 12px; text-align: justify; text-indent: 1em; line-height: 1.8; font-size: ${bodyFontSize}px;">${p}</p>`
+                ).join('');
+
+                const hankoHTML = showHanko ? `
+                    <div class="hanko-seal" style="width: 38px; height: 38px; font-size: 11px; display: inline-flex; vertical-align: middle; margin-left: 8px;">
+                        <span>印鑑</span>
+                    </div>
+                ` : '';
+
+                container.innerHTML = `
+                    <!-- Header Title (Crisp, Clear, Centered) -->
+                    <div style="text-align: center; margin-top: 10px; margin-bottom: 24px;">
+                        <h1 class="gold-target-title title-ultra-crisp title-gold-crisp" style="font-size: ${titleFontSize}px; font-weight: 900; line-height: 1.2;">${title}</h1>
+                    </div>
+
+                    <!-- Target Header (Japan Recipient) -->
+                    <div style="text-align: left; margin-bottom: 22px; font-weight: bold; font-size: ${Math.round(bodyFontSize * 1.15)}px; line-height: 1.6; padding-left: 10px;">
+                        <div>${targetCompany}</div>
+                        <div>${targetPerson}</div>
+                    </div>
+
+                    <!-- Main Body Paragraphs -->
+                    <div style="flex: 1; overflow: hidden; margin-bottom: 20px; padding: 0 10px; display: flex; flex-direction: column; justify-content: flex-start;">
+                        ${formattedBody}
+                    </div>
+
+                    <!-- Footer Sender & Date -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; font-size: ${bodyFontSize}px; padding: 0 10px;">
+                        <div style="font-weight: 600; color: #78350f;">${date}</div>
+                        <div style="text-align: right; font-weight: bold; line-height: 1.6;">
+                            <div>${senderCompany}</div>
+                            <div>${senderPerson} ${hankoHTML}</div>
+                            <div style="font-size: ${Math.round(bodyFontSize * 0.85)}px; opacity: 0.85; font-weight: normal;">${senderGroup}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            applyTypographyStyles();
+        }
+
+        function applyTypographyStyles() {
+            const fontClass = document.getElementById('fontSelect').value;
+            const colorMode = document.getElementById('colorModeSelect').value;
+            const card = document.getElementById('certificateCard');
+            const container = document.getElementById('certificateContent');
+
+            // Apply Font
+            container.classList.remove('font-mincho', 'font-gothic', 'font-klee');
+            container.classList.add(fontClass);
+
+            // Apply Text Color Mode
+            const titleEls = container.querySelectorAll('.gold-target-title');
+
+            if (colorMode === 'gold-foil') {
+                const titleColor = currentMaterial === 'wood' ? '#fde047' : '#78350f';
+                card.style.color = currentMaterial === 'wood' ? '#fbe3b5' : '#1e293b';
+                titleEls.forEach(el => {
+                    el.className = 'gold-target-title title-ultra-crisp title-gold-crisp';
+                    el.style.color = titleColor;
+                    el.style.background = 'none';
+                    el.style.webkitTextFillColor = titleColor;
+                    el.style.filter = 'none';
+                });
+            } else if (colorMode === 'black-ink') {
+                card.style.color = '#0f172a';
+                titleEls.forEach(el => {
+                    el.className = 'gold-target-title title-ultra-crisp';
+                    el.style.color = '#0f172a';
+                    el.style.background = 'none';
+                    el.style.webkitTextFillColor = '#0f172a';
+                    el.style.filter = 'none';
+                });
+            } else if (colorMode === 'engraved-gold') {
+                const titleColor = currentMaterial === 'wood' ? '#fef08a' : '#b45309';
+                card.style.color = currentMaterial === 'wood' ? '#fbe3b5' : '#92400e';
+                titleEls.forEach(el => {
+                    el.className = 'gold-target-title title-ultra-crisp';
+                    el.style.color = titleColor;
+                    el.style.background = 'none';
+                    el.style.webkitTextFillColor = titleColor;
+                    el.style.filter = 'none';
+                });
+            }
+        }
+
+        function updateDesign() {
+            const style = document.getElementById('frameStyleSelect').value;
+            const card = document.getElementById('certificateCard');
+
+            let w = 840;
+            let h = 594;
+
+            if (currentLayout === 'horizontal') {
+                w = 594;
+                h = 840;
+            }
+
+            card.style.width = w + 'px';
+            card.style.height = h + 'px';
+
+            const frameContainer = document.getElementById('svgFrameContainer');
+            frameContainer.innerHTML = generateSVGFrame(style, w, h);
+
+            updateContent();
+        }
+
+        function exportSVG() {
+            const style = document.getElementById('frameStyleSelect').value;
+            if (style === 'none') {
+                showToast('請先選擇外框風格再匯出 SVG 向量檔');
+                return;
+            }
+
+            const w = currentLayout === 'horizontal' ? 594 : 840;
+            const h = currentLayout === 'horizontal' ? 840 : 594;
+
+            const svgContent = generateSVGFrame(style, w, h);
+            const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = `感謝狀燙金向量外框_${style}.svg`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            showToast('已成功下載 SVG 燙金外框向量檔！');
+        }
+
+        function exportPNG() {
+            const card = document.getElementById('certificateCard');
+            showToast('正在生成高解析度圖片...');
+
+            card.classList.add('html2canvas-active');
+
+            html2canvas(card, {
+                scale: 3,
+                useCORS: true,
+                backgroundColor: null,
+                logging: false,
+                onclone: (clonedDoc) => {
+                    const clonedCard = clonedDoc.getElementById('certificateCard');
+                    if (clonedCard) {
+                        clonedCard.classList.add('html2canvas-active');
+                    }
+                }
+            }).then(canvas => {
+                card.classList.remove('html2canvas-active');
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = `日式實體燙金感謝狀預覽稿.png`;
+                link.click();
+                showToast('已成功下載高清 PNG 圖檔！');
+            }).catch(err => {
+                card.classList.remove('html2canvas-active');
+                showToast('圖片匯出失敗，請重試');
+                console.error(err);
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toastMsg');
+            msg.innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
